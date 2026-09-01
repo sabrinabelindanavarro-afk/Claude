@@ -1,8 +1,12 @@
 import { notFound } from 'next/navigation';
 import { fetchRoomById } from '@/lib/properties.server';
+import { requireApprovedAccess } from '@/lib/require-approved.server';
 import BookingWizard from '@/components/BookingWizard';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ReservarPage({ params }: { params: { id: string } }) {
+  await requireApprovedAccess(`/reservar/${params.id}`);
   const room = await fetchRoomById(params.id);
   if (!room) return notFound();
 

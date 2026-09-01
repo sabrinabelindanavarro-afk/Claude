@@ -113,3 +113,58 @@ create table if not exists public.app_settings (
 alter table public.app_settings enable row level security;
 
 insert into public.app_settings (id) values (1) on conflict (id) do nothing;
+
+-- ============================================================================
+-- Acceso al catálogo privado: para ver /rooms un usuario tiene que primero
+-- completar el formulario de compatibilidad de /apply. La solicitud se evalúa
+-- server-side (ver lib/application-scoring.ts) y solo si queda en estado
+-- APPROVED se le permite crear una cuenta (/signup) y entrar a /rooms.
+--
+-- Sin ninguna policy de RLS a propósito: el formulario público inserta a
+-- través de /api/apply, y toda lectura/escritura pasa por rutas de servidor
+-- con la service_role key. Así nadie puede leer solicitudes ajenas ni
+-- fabricar un estado APPROVED por su cuenta desde el navegador.
+-- ============================================================================
+create table if not exists public.applications (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  phone text,
+  zone text not null,
+  move_in_date date,
+  occupancy_type text not null,       -- 'individual' | 'pareja'
+  has_minors boolean not null default false,
+  has_pet boolean not null default false,
+  smoker boolean not null default false,
+  occupation_type text not null,      -- 'trabajador' | 'estudiante'
+  budget numeric not null,
+  stay_duration_months int not null,
+  status text not null default 'REVIEW',  -- 'APPROVED' | 'REVIEW' | 'NOT_ELIGIBLE'
+  internal_reason text,               -- nunca se muestra al usuario
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.applications enable row level security;
+
+create index if not exists applications_email_idx on public.applications (lower(email));
+create index if not exists applications_phone_idx on public.applications (phone);
+
+-- Relaciona cada cuenta de Supabase Auth con la solicitud que la habilitó.
+-- application_status queda "congelado" al momento del alta: si más adelante
+-- necesitás revocar el acceso de alguien, actualizá esta fila directamente.
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  application_id uuid references public.applications(id),
+  application_status text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+-- Cada usuario puede leer únicamente su propia fila — es lo que usa /rooms
+-- para comprobar en el servidor si tiene acceso, sin necesitar la
+-- service_role key en ese chequeo.
+create policy "users read their own profile"
+  on public.profiles for select
+  using (auth.uid() = id);

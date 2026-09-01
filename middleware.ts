@@ -25,7 +25,21 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Primera capa de defensa para el catálogo privado: si ni siquiera hay
+  // sesión, ni vale la pena llegar a la página (que además vuelve a
+  // comprobar la solicitud APPROVED en el servidor antes de renderizar nada).
+  const isProtected =
+    request.nextUrl.pathname.startsWith('/rooms') || request.nextUrl.pathname.startsWith('/reservar');
+  if (isProtected && !user) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('next', request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
   return response;
 }
 

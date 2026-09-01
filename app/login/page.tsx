@@ -16,7 +16,7 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get('next') || '/';
+  const next = searchParams.get('next') || '/rooms';
   const supabase = createClient();
 
   const [email, setEmail] = useState('');
@@ -86,8 +86,8 @@ function LoginForm() {
 
       <p className="mt-6 text-center text-sm text-vivi-muted">
         ¿No tenés cuenta?{' '}
-        <Link href={`/signup?next=${encodeURIComponent(next)}`} className="font-semibold text-vivi-navy">
-          Creá una
+        <Link href="/apply" className="font-semibold text-vivi-navy">
+          Completá tu perfil de búsqueda
         </Link>
       </p>
     </section>

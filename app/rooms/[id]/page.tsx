@@ -1,9 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchRoomById } from '@/lib/properties.server';
+import { requireApprovedAccess } from '@/lib/require-approved.server';
 import FavoriteButton from '@/components/FavoriteButton';
 
+export const dynamic = 'force-dynamic';
+
 export default async function RoomDetailPage({ params }: { params: { id: string } }) {
+  await requireApprovedAccess(`/rooms/${params.id}`);
   const room = await fetchRoomById(params.id);
   if (!room) return notFound();
 
@@ -12,7 +16,7 @@ export default async function RoomDetailPage({ params }: { params: { id: string 
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-10">
-      <Link href="/" className="text-sm font-medium text-vivi-muted hover:text-vivi-navy">
+      <Link href="/rooms" className="text-sm font-medium text-vivi-muted hover:text-vivi-navy">
         ← Volver a la búsqueda
       </Link>
 
