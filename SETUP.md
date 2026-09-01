@@ -16,7 +16,7 @@ escribir código: son cuentas + copiar y pegar claves.
 4. **Para subir o editar habitaciones sin código:** Dashboard → **Table Editor** →
    tabla `properties` → botón **Insert row** (o hacé clic en una celda para editarla,
    como en una planilla). Los campos son: zona, título, precio, % match, fecha
-   disponible (`dd/mm/aaaa`), si acepta pareja/mascota, comodidades (`amenities`,
+   disponible (`dd/mm/aaaa`), si acepta pareja, comodidades (`amenities`,
    lista separada por comas) y descripción.
 5. **Para el login:** no hay nada más que hacer — en cuanto completes el paso 3, los
    botones "Iniciar sesión" / "Crear cuenta" del sitio ya funcionan con email y

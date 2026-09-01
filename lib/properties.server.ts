@@ -10,7 +10,6 @@ function mapSupabaseRow(row: any): Room {
     match: row.match ?? 90,
     available: row.available,
     individualOrPareja: row.individual_or_pareja ?? 'ambos',
-    pet: !!row.pet,
     workerOrStudent: row.worker_or_student ?? 'ambos',
     photos: row.photos ?? 1,
     colorFrom: row.color_from ?? '#BFD9FF',

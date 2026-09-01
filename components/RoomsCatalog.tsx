@@ -10,17 +10,15 @@ export default function RoomsCatalog({ rooms }: { rooms: Room[] }) {
   const [zone, setZone] = useState('Todas');
   const [maxBudget, setMaxBudget] = useState(900);
   const [pareja, setPareja] = useState(false);
-  const [pet, setPet] = useState(false);
 
   const filtered = useMemo(() => {
     return rooms.filter((room) => {
       if (zone !== 'Todas' && room.zone !== zone) return false;
       if (room.price > maxBudget) return false;
       if (pareja && room.individualOrPareja === 'individual') return false;
-      if (pet && !room.pet) return false;
       return true;
     });
-  }, [rooms, zone, maxBudget, pareja, pet]);
+  }, [rooms, zone, maxBudget, pareja]);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
@@ -63,15 +61,6 @@ export default function RoomsCatalog({ rooms }: { rooms: Room[] }) {
             className="accent-vivi-mint"
           />
           Acepta pareja
-        </label>
-        <label className="mt-3 flex items-center gap-2 text-sm text-vivi-ink">
-          <input
-            type="checkbox"
-            checked={pet}
-            onChange={(e) => setPet(e.target.checked)}
-            className="accent-vivi-mint"
-          />
-          Acepta mascota
         </label>
       </aside>
 

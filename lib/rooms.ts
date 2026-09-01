@@ -6,7 +6,6 @@ export type Room = {
   match: number;
   available: string;
   individualOrPareja: 'individual' | 'pareja' | 'ambos';
-  pet: boolean;
   workerOrStudent: 'trabajador' | 'estudiante' | 'ambos';
   photos: number;
   colorFrom: string;
@@ -30,7 +29,6 @@ export const mockRooms: Room[] = [
     match: 94,
     available: '01/10/2026',
     individualOrPareja: 'ambos',
-    pet: true,
     workerOrStudent: 'ambos',
     photos: 12,
     colorFrom: '#BFD9FF',
@@ -47,7 +45,6 @@ export const mockRooms: Room[] = [
     match: 89,
     available: '15/10/2026',
     individualOrPareja: 'individual',
-    pet: false,
     workerOrStudent: 'estudiante',
     photos: 9,
     colorFrom: '#E4D9FF',
@@ -63,7 +60,6 @@ export const mockRooms: Room[] = [
     match: 86,
     available: '01/11/2026',
     individualOrPareja: 'pareja',
-    pet: false,
     workerOrStudent: 'trabajador',
     photos: 10,
     colorFrom: '#BFEBE0',
@@ -79,7 +75,6 @@ export const mockRooms: Room[] = [
     match: 82,
     available: '01/10/2026',
     individualOrPareja: 'ambos',
-    pet: true,
     workerOrStudent: 'ambos',
     photos: 14,
     colorFrom: '#FFD9CF',
