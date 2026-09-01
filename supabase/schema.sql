@@ -1,6 +1,7 @@
 -- Ejecutá esto una vez en Supabase: Dashboard → SQL Editor → New query → pegar y "Run".
 -- Después de correrlo, ya podés agregar/editar habitaciones sin código desde
--- Dashboard → Table Editor → properties → Insert row.
+-- /admin/propiedades en la web (recomendado), o directamente desde
+-- Dashboard → Table Editor → properties → Insert row si preferís.
 
 create table if not exists public.properties (
   id text primary key,
@@ -30,13 +31,10 @@ create policy "properties are publicly readable"
   on public.properties for select
   using (true);
 
--- Solo usuarios logueados pueden crear/editar/borrar propiedades.
--- Si preferís que solo tu equipo (no cualquier usuario registrado) administre el
--- catálogo, cambiá esta policy para chequear un rol/lista de emails de admin.
-create policy "authenticated users manage properties"
-  on public.properties for all
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
+-- No hay policy de escritura para `properties`: agregar/editar/borrar habitaciones
+-- se hace desde /admin/propiedades, que pasa siempre por rutas de servidor
+-- protegidas con ADMIN_EMAILS y la service_role key (bypassea RLS). Así un
+-- usuario cualquiera que se registre no puede tocar el catálogo directamente.
 
 -- Datos de ejemplo (podés borrarlos desde el Table Editor cuando cargues los tuyos).
 insert into public.properties (id, zone, title, price, match, available, individual_or_pareja, worker_or_student, photos, color_from, color_to, amenities, description, manager, response_time, manager_phone, manager_email)
@@ -59,6 +57,11 @@ on conflict (id) do nothing;
 -- alter table public.properties add column if not exists response_time text not null default 'Responde en menos de 24 horas';
 -- alter table public.properties add column if not exists manager_phone text not null default '+34 600 000 000';
 -- alter table public.properties add column if not exists manager_email text not null default 'hola@vivi-valencia.com';
+--
+-- Si ya habías corrido una versión anterior con la policy "authenticated users
+-- manage properties" (permitía a cualquier usuario registrado editar el
+-- catálogo), sacala así solo se puede editar desde /admin:
+-- drop policy if exists "authenticated users manage properties" on public.properties;
 
 -- ============================================================================
 -- Reservas: registra cada intento de reserva y su avance por el embudo, hasta
@@ -90,3 +93,23 @@ create policy "users manage their own bookings"
 
 -- El panel /admin lee todas las reservas con la service_role key (ver SETUP.md),
 -- que no pasa por RLS, así que no hace falta una policy extra para eso.
+
+-- ============================================================================
+-- Integraciones: acá se guardan las claves de Stripe y Didit cuando las cargás
+-- desde /admin/integraciones en vez de configurarlas como variables de entorno.
+-- Es una sola fila (id=1). No tiene ninguna policy de RLS a propósito: ni
+-- anon ni authenticated pueden leerla ni escribirla, solo la service_role key
+-- (que usa el servidor de /admin) puede saltarse RLS y acceder.
+-- ============================================================================
+create table if not exists public.app_settings (
+  id int primary key default 1,
+  stripe_secret_key text,
+  didit_api_key text,
+  didit_workflow_id text,
+  updated_at timestamptz not null default now(),
+  constraint app_settings_singleton check (id = 1)
+);
+
+alter table public.app_settings enable row level security;
+
+insert into public.app_settings (id) values (1) on conflict (id) do nothing;

@@ -1,20 +1,21 @@
 import { NextResponse } from 'next/server';
+import { resolveDiditConfig } from '@/lib/settings.server';
+import { resolveSiteUrl } from '@/lib/site-url';
 
 // Integración con Didit (verificación de identidad). Confirmá el endpoint exacto,
 // el nombre del header de API key y la forma de la respuesta contra la documentación
 // vigente de Didit antes de pasar a producción: https://docs.didit.me
 export async function POST(request: Request) {
-  const apiKey = process.env.DIDIT_API_KEY;
-  const workflowId = process.env.DIDIT_WORKFLOW_ID;
+  const { apiKey, workflowId } = await resolveDiditConfig();
   if (!apiKey || !workflowId) {
     return NextResponse.json(
-      { error: 'Didit no está configurado todavía (falta DIDIT_API_KEY / DIDIT_WORKFLOW_ID). Ver SETUP.md.' },
+      { error: 'Didit no está configurado todavía. Cargá tus claves en /admin/integraciones.' },
       { status: 501 }
     );
   }
 
   const { roomId } = await request.json();
-  const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || '';
+  const origin = resolveSiteUrl(request);
 
   const diditResponse = await fetch('https://verification.didit.me/v1/session/', {
     method: 'POST',

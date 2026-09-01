@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/require-admin.server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { toPropertyRow, type PropertyInput } from '@/lib/property-input';
 
 export async function POST(request: Request) {
   const user = await getAdminUser();
@@ -9,16 +10,12 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   if (!admin) return NextResponse.json({ error: 'Supabase no está configurado.' }, { status: 501 });
 
-  const { bookingId, visitStatus } = await request.json();
-  if (!['pendiente', 'agendada', 'hecha'].includes(visitStatus)) {
-    return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
+  const input: PropertyInput = await request.json();
+  if (!input.id || !input.title || !input.zone) {
+    return NextResponse.json({ error: 'Faltan campos obligatorios.' }, { status: 400 });
   }
 
-  const { error } = await admin
-    .from('bookings')
-    .update({ visit_status: visitStatus, updated_at: new Date().toISOString() })
-    .eq('id', bookingId);
-
+  const { error } = await admin.from('properties').insert(toPropertyRow(input));
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

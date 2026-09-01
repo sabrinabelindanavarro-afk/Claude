@@ -1,9 +1,9 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { isAdminEmail } from '@/lib/admin-auth';
+import { adminPageGate } from '@/lib/admin-page-gate.server';
 import { fetchAllBookings } from '@/lib/admin.server';
 import { fetchRooms } from '@/lib/properties.server';
 import { VIVI_COMMISSION_EUR } from '@/lib/rooms';
+import AdminGateMessage from '@/components/AdminGateMessage';
+import AdminTabs from '@/components/AdminTabs';
 import AdminVisitAction from '@/components/AdminVisitAction';
 
 // Nunca cachear esta página: muestra datos privados por sesión (auth + reservas).
@@ -15,48 +15,37 @@ const STAGE_LABEL: Record<string, string> = {
   pagado: 'Pagado',
 };
 
+const STAGE_COLOR: Record<string, string> = {
+  nuevo: '#22D3AA',
+  verificado: '#8B7CF6',
+  pagado: '#FB7360',
+};
+
 const STAGE_ORDER = ['nuevo', 'verificado', 'pagado'] as const;
 
 export default async function AdminPage() {
-  const supabase = createClient();
-  if (!supabase) {
-    return (
-      <section className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <p className="text-vivi-muted">Supabase todavía no está configurado (ver SETUP.md).</p>
-      </section>
-    );
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect('/login?next=/admin');
-
-  if (!isAdminEmail(user.email)) {
-    return (
-      <section className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <p className="text-lg font-bold text-vivi-ink">No autorizado</p>
-        <p className="mt-2 text-sm text-vivi-muted">
-          Tu cuenta ({user.email}) no está en la lista de administradores. Agregala a la variable de
-          entorno ADMIN_EMAILS (ver SETUP.md).
-        </p>
-      </section>
-    );
-  }
+  const gate = await adminPageGate('/admin');
+  if (!gate.ok) return <AdminGateMessage reason={gate.reason} />;
 
   const [bookings, rooms] = await Promise.all([fetchAllBookings(), fetchRooms()]);
 
   const paid = bookings.filter((b) => b.status === 'pagado');
-  const visitsScheduledOrDone = bookings.filter(
+  const visitScheduledOrDone = bookings.filter(
     (b) => b.visitStatus === 'agendada' || b.visitStatus === 'hecha'
   );
+  const visitDone = bookings.filter((b) => b.visitStatus === 'hecha');
   const commissionRevenue = paid.length * VIVI_COMMISSION_EUR;
   const stageCounts = STAGE_ORDER.map((stage) => ({
     stage,
     count: bookings.filter((b) => b.status === stage).length,
   }));
   const maxStageCount = Math.max(1, ...stageCounts.map((s) => s.count));
+
+  const postPagoBars = [
+    { label: 'Reserva pagada', count: paid.length, of: paid.length },
+    { label: 'Visita agendada', count: visitScheduledOrDone.length, of: paid.length },
+    { label: 'Visita realizada', count: visitDone.length, of: paid.length },
+  ];
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-12">
@@ -65,26 +54,63 @@ export default async function AdminPage() {
         Toda la operación en una sola vista.
       </h1>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-4">
-        <StatCard label="Habitaciones activas" value={String(rooms.length)} />
-        <StatCard label="Reservas pagadas" value={String(paid.length)} />
-        <StatCard label="Comisión VIVI generada" value={`${commissionRevenue.toLocaleString('es-ES')} €`} />
-        <StatCard label="Visitas agendadas" value={String(visitsScheduledOrDone.length)} />
+      <AdminTabs active="/admin" />
+
+      <div className="grid gap-4 sm:grid-cols-4">
+        <StatCard label="Habitaciones activas" value={String(rooms.length)} accent="#22D3AA" />
+        <StatCard label="Reservas pagadas" value={String(paid.length)} accent="#5B93F2" />
+        <StatCard
+          label="Comisión VIVI generada"
+          value={`${commissionRevenue.toLocaleString('es-ES')} €`}
+          accent="#8B7CF6"
+        />
+        <StatCard label="Visitas agendadas" value={String(visitScheduledOrDone.length)} accent="#FB7360" />
       </div>
 
-      <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="text-sm font-bold text-vivi-ink">Pipeline de reservas</h2>
-        <div className="mt-4 flex items-end gap-6" style={{ height: 120 }}>
-          {stageCounts.map(({ stage, count }) => (
-            <div key={stage} className="flex flex-col items-center gap-2">
-              <div
-                className="w-16 rounded-t-lg bg-vivi-mint"
-                style={{ height: `${Math.max(6, (count / maxStageCount) * 96)}px` }}
-              />
-              <p className="text-xs font-semibold text-vivi-ink">{STAGE_LABEL[stage]}</p>
-              <p className="text-xs text-vivi-muted">{count}</p>
-            </div>
-          ))}
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl bg-vivi-navy p-6 text-white">
+          <h2 className="text-sm font-bold">Pipeline de reservas</h2>
+          <div className="mt-6 flex items-end gap-6" style={{ height: 120 }}>
+            {stageCounts.map(({ stage, count }) => (
+              <div key={stage} className="flex flex-col items-center gap-2">
+                <div
+                  className="w-16 rounded-t-lg"
+                  style={{
+                    height: `${Math.max(6, (count / maxStageCount) * 96)}px`,
+                    background: STAGE_COLOR[stage],
+                  }}
+                />
+                <p className="text-xs font-semibold">{STAGE_LABEL[stage]}</p>
+                <p className="text-xs text-slate-400">{count}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl bg-vivi-navy p-6 text-white">
+          <h2 className="text-sm font-bold">Operación post-pago</h2>
+          <div className="mt-6 space-y-4">
+            {postPagoBars.map((bar) => {
+              const pct = bar.of > 0 ? Math.round((bar.count / bar.of) * 100) : 0;
+              return (
+                <div key={bar.label}>
+                  <div className="flex justify-between text-xs text-slate-300">
+                    <span>{bar.label}</span>
+                    <span>{bar.count}</span>
+                  </div>
+                  <div className="mt-1.5 h-2.5 w-full rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full bg-vivi-mint"
+                      style={{ width: `${bar.label === 'Reserva pagada' ? 100 : pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-5 text-xs text-slate-400">
+            Sobre el total de reservas pagadas ({paid.length}).
+          </p>
         </div>
       </div>
 
@@ -155,9 +181,12 @@ export default async function AdminPage() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, accent }: { label: string; value: string; accent: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
+    <div
+      className="rounded-2xl border border-slate-200 bg-white p-5"
+      style={{ borderLeft: `4px solid ${accent}` }}
+    >
       <p className="text-2xl font-extrabold text-vivi-ink">{value}</p>
       <p className="mt-1 text-xs font-medium text-vivi-muted">{label}</p>
     </div>

@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
 import { fetchRoomById } from '@/lib/properties.server';
+import { resolveStripeSecretKey } from '@/lib/settings.server';
 
 export async function POST(request: Request) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const secretKey = await resolveStripeSecretKey();
   const supabase = createClient();
   if (!secretKey || !supabase) {
     return NextResponse.json({ error: 'Stripe o Supabase no están configurados.' }, { status: 501 });

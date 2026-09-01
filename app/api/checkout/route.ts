@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { calculateBookingTotal } from '@/lib/rooms';
 import { fetchRoomById } from '@/lib/properties.server';
+import { resolveStripeSecretKey } from '@/lib/settings.server';
+import { resolveSiteUrl } from '@/lib/site-url';
 
 export async function POST(request: Request) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const secretKey = await resolveStripeSecretKey();
   if (!secretKey) {
     return NextResponse.json(
-      { error: 'Stripe no está configurado todavía (falta STRIPE_SECRET_KEY). Ver SETUP.md.' },
+      { error: 'Stripe no está configurado todavía. Cargá tu clave en /admin/integraciones.' },
       { status: 501 }
     );
   }
@@ -19,7 +21,7 @@ export async function POST(request: Request) {
   }
 
   const { deposit, commission } = calculateBookingTotal(room.price);
-  const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || '';
+  const origin = resolveSiteUrl(request);
 
   const stripe = new Stripe(secretKey);
   const session = await stripe.checkout.sessions.create({
