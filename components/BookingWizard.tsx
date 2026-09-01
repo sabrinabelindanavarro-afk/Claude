@@ -28,9 +28,28 @@ export default function BookingWizard({ room }: { room: Room }) {
     supabase?.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
   }, [supabase]);
 
+  // Solo queremos registrar la etapa 'nuevo' una vez cuando detectamos sesión,
+  // no en cada render (upsertStage se recrea cada vez).
+  useEffect(() => {
+    if (!userEmail) return;
+    upsertStage('nuevo');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userEmail]);
+
   const isLastStep = step === steps.length - 1;
   const authRequired = step === 1 && !userEmail;
   const kycRequired = step === 2 && !kycVerified;
+
+  function upsertStage(status: 'nuevo' | 'verificado') {
+    fetch('/api/bookings/upsert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomId: room.id, status }),
+    }).catch(() => {
+      // El seguimiento en el panel interno es best-effort: si Supabase no está
+      // configurado todavía, la reserva sigue funcionando igual.
+    });
+  }
 
   async function handleVerifyKyc() {
     setKycNote(null);
@@ -42,6 +61,7 @@ export default function BookingWizard({ room }: { room: Room }) {
     if (res.ok) {
       const { url } = await res.json();
       if (url) {
+        upsertStage('verificado');
         window.location.href = url;
         return;
       }
@@ -49,6 +69,7 @@ export default function BookingWizard({ room }: { room: Room }) {
     // Didit todavía no está conectado: dejamos avanzar en modo demo.
     setKycNote('Modo demo: Didit todavía no está conectado (ver SETUP.md). Verificación simulada.');
     setKycVerified(true);
+    upsertStage('verificado');
   }
 
   async function handlePay() {

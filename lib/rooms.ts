@@ -14,6 +14,8 @@ export type Room = {
   description: string;
   manager: string;
   responseTime: string;
+  managerPhone: string;
+  managerEmail: string;
 };
 
 export const MINIMUM_STAY_MONTHS = 6;
@@ -40,6 +42,8 @@ export const mockRooms: Room[] = [
       'Habitación exterior con balcón en un piso reformado a dos calles del Mercado de Ruzafa. Zona con más ambiente de bares y coworkings de la ciudad, ideal si trabajás remoto o estudiás cerca del centro.',
     manager: 'Alba',
     responseTime: 'Responde en menos de 2 horas',
+    managerPhone: '+34 600 111 222',
+    managerEmail: 'alba@vivi-valencia.com',
   },
   {
     id: 'benimaclet-1c',
@@ -58,6 +62,8 @@ export const mockRooms: Room[] = [
       'A diez minutos a pie de la Universitat de València y la Politècnica. Barrio tranquilo con huerta cerca, panaderías de toda la vida y buena conexión en metro hacia el centro.',
     manager: 'Marc',
     responseTime: 'Responde en menos de 4 horas',
+    managerPhone: '+34 600 333 444',
+    managerEmail: 'marc@vivi-valencia.com',
   },
   {
     id: 'mestalla-2b',
@@ -76,6 +82,8 @@ export const mockRooms: Room[] = [
       'Piso con mucha luz natural en una calle tranquila detrás del Mestalla. Buena opción si trabajás en la zona norte de la ciudad o llegás en tren a Cabanyal-Alameda.',
     manager: 'Alba',
     responseTime: 'Responde en menos de 2 horas',
+    managerPhone: '+34 600 111 222',
+    managerEmail: 'alba@vivi-valencia.com',
   },
   {
     id: 'el-carmen-4d',
@@ -94,6 +102,8 @@ export const mockRooms: Room[] = [
       'En pleno casco histórico, en un edificio del siglo XIX restaurado con techos altos y suelos originales. Todo el barrio a pie: Torres de Serranos, galerías de arte y las mejores terrazas.',
     manager: 'Nuria',
     responseTime: 'Responde en menos de 1 hora',
+    managerPhone: '+34 600 555 666',
+    managerEmail: 'nuria@vivi-valencia.com',
   },
   {
     id: 'extramurs-2a',
@@ -112,6 +122,8 @@ export const mockRooms: Room[] = [
       'Barrio residencial y bien conectado, a cinco paradas de metro del centro. Piso compartido con solo dos habitaciones, ambiente calmado, perfecto para teletrabajo.',
     manager: 'Marc',
     responseTime: 'Responde en menos de 4 horas',
+    managerPhone: '+34 600 333 444',
+    managerEmail: 'marc@vivi-valencia.com',
   },
   {
     id: 'camins-3c',
@@ -130,6 +142,8 @@ export const mockRooms: Room[] = [
       'A quince minutos caminando de la playa de la Malvarrosa y cerca de la Ciudad de las Artes y las Ciencias. Ideal para parejas que buscan estabilidad y buen transporte al centro.',
     manager: 'Nuria',
     responseTime: 'Responde en menos de 1 hora',
+    managerPhone: '+34 600 555 666',
+    managerEmail: 'nuria@vivi-valencia.com',
   },
   {
     id: 'patraix-1b',
@@ -148,6 +162,8 @@ export const mockRooms: Room[] = [
       'Zona residencial con buen precio y todos los servicios cerca: supermercados, gimnasio y metro a diez minutos. Piso recién reformado con cocina y baño nuevos.',
     manager: 'Alba',
     responseTime: 'Responde en menos de 2 horas',
+    managerPhone: '+34 600 111 222',
+    managerEmail: 'alba@vivi-valencia.com',
   },
   {
     id: 'algiros-2d',
@@ -166,6 +182,8 @@ export const mockRooms: Room[] = [
       'A cinco minutos de la Universitat Politècnica de València, en una zona con mucha vida estudiantil y buenas conexiones de bus y bici. Piso pensado para estudiar tranquilo.',
     manager: 'Marc',
     responseTime: 'Responde en menos de 4 horas',
+    managerPhone: '+34 600 333 444',
+    managerEmail: 'marc@vivi-valencia.com',
   },
   {
     id: 'malvarrosa-5a',
@@ -184,6 +202,8 @@ export const mockRooms: Room[] = [
       'A metros del paseo marítimo, con vistas parciales al mar desde la habitación. Ambiente relajado de barrio de playa, con el chiringuito y el paseo para correr a la puerta.',
     manager: 'Nuria',
     responseTime: 'Responde en menos de 1 hora',
+    managerPhone: '+34 600 555 666',
+    managerEmail: 'nuria@vivi-valencia.com',
   },
 ];
 

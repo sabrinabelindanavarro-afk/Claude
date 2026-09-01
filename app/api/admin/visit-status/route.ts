@@ -1,0 +1,34 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { isAdminEmail } from '@/lib/admin-auth';
+
+export async function POST(request: Request) {
+  const supabase = createClient();
+  const admin = createAdminClient();
+  if (!supabase || !admin) {
+    return NextResponse.json({ error: 'Supabase no está configurado.' }, { status: 501 });
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!isAdminEmail(user?.email)) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+  }
+
+  const { bookingId, visitStatus } = await request.json();
+  if (!['pendiente', 'agendada', 'hecha'].includes(visitStatus)) {
+    return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
+  }
+
+  const { error } = await admin
+    .from('bookings')
+    .update({ visit_status: visitStatus, updated_at: new Date().toISOString() })
+    .eq('id', bookingId);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true });
+}

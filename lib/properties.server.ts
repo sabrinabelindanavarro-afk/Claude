@@ -18,6 +18,8 @@ function mapSupabaseRow(row: any): Room {
     description: row.description ?? '',
     manager: row.manager ?? 'Equipo VIVI',
     responseTime: row.response_time ?? 'Responde en menos de 24 horas',
+    managerPhone: row.manager_phone ?? '+34 600 000 000',
+    managerEmail: row.manager_email ?? 'hola@vivi-valencia.com',
   };
 }
 
