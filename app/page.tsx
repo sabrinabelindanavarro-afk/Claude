@@ -76,7 +76,7 @@ export default async function HomePage() {
             />
             <Step
               n={3}
-              title="Entrás al catálogo privado"
+              title="Ves la disponibilidad real"
               desc="Si hay match, creás tu cuenta y ves habitaciones, precios y fechas exactas."
             />
           </div>
