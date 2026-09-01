@@ -1,5 +1,4 @@
-import Hero from '@/components/Hero';
-import RoomsCatalog from '@/components/RoomsCatalog';
+import Catalog from '@/components/Catalog';
 import { fetchRooms } from '@/lib/properties.server';
 
 export default async function HomePage() {
@@ -7,21 +6,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero />
-
-      <section id="catalogo" className="mx-auto max-w-6xl px-6 py-20">
-        <p className="text-xs font-bold uppercase tracking-wide text-vivi-mint">Marketplace privado</p>
-        <h2 className="mt-2 text-3xl font-extrabold text-vivi-ink sm:text-4xl">
-          Explorar es libre. Reservar requiere estar verificado.
-        </h2>
-        <p className="mt-3 max-w-2xl text-sm text-vivi-muted">
-          Una experiencia sencilla, visual y comparable para alquiler residencial de medio/largo plazo.
-          Todas las habitaciones son para vivienda habitual, con una estancia mínima de 6 meses.
-        </p>
-        <div className="mt-10">
-          <RoomsCatalog rooms={rooms} />
-        </div>
-      </section>
+      <Catalog rooms={rooms} />
 
       <section id="faq" className="mx-auto max-w-6xl px-6 py-20">
         <p className="text-xs font-bold uppercase tracking-wide text-vivi-mint">Preguntas frecuentes</p>

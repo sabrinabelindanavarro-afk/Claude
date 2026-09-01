@@ -16,6 +16,8 @@ function mapSupabaseRow(row: any): Room {
     colorTo: row.color_to ?? '#DCE9FF',
     amenities: row.amenities ?? [],
     description: row.description ?? '',
+    manager: row.manager ?? 'Equipo VIVI',
+    responseTime: row.response_time ?? 'Responde en menos de 24 horas',
   };
 }
 
