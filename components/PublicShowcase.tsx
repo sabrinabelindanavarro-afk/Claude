@@ -7,13 +7,13 @@ const SAMPLES = [
 export default function PublicShowcase() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
-      <p className="text-xs font-bold uppercase tracking-wide text-vivi-mint">Así son algunas habitaciones</p>
+      <p className="text-xs font-bold uppercase tracking-wide text-vivi-mint">Nuestras habitaciones</p>
       <h2 className="mt-2 text-2xl font-extrabold text-vivi-ink sm:text-3xl">
-        Ejemplos del tipo de habitación que vas a encontrar.
+        Habitaciones pensadas para quedarte.
       </h2>
       <p className="mt-2 max-w-xl text-sm text-vivi-muted">
-        Estos son ejemplos ilustrativos. La disponibilidad real, con precios y fechas exactas, se
-        muestra después de completar tu perfil de búsqueda.
+        Este es el estilo y el estándar que vas a encontrar. La disponibilidad exacta, con precios y
+        fechas reales, se desbloquea al completar tu perfil de búsqueda.
       </p>
 
       <div className="mt-8 grid gap-6 sm:grid-cols-3">
@@ -26,7 +26,7 @@ export default function PublicShowcase() {
             <div className="mt-3 flex items-center justify-between">
               <p className="font-semibold text-vivi-ink">{s.zone}</p>
               <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-vivi-muted">
-                Ejemplo
+                Vista previa
               </span>
             </div>
             <p className="text-sm text-vivi-muted">desde {s.priceFrom} € / mes</p>
