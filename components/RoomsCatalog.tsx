@@ -1,12 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { rooms } from '@/lib/rooms';
+import type { Room } from '@/lib/rooms';
 import RoomCard from '@/components/RoomCard';
 
-const zones = ['Todas', ...Array.from(new Set(rooms.map((r) => r.zone)))];
+export default function RoomsCatalog({ rooms }: { rooms: Room[] }) {
+  const zones = ['Todas', ...Array.from(new Set(rooms.map((r) => r.zone)))];
 
-export default function RoomsCatalog() {
   const [zone, setZone] = useState('Todas');
   const [maxBudget, setMaxBudget] = useState(900);
   const [pareja, setPareja] = useState(false);
@@ -20,7 +20,7 @@ export default function RoomsCatalog() {
       if (pet && !room.pet) return false;
       return true;
     });
-  }, [zone, maxBudget, pareja, pet]);
+  }, [rooms, zone, maxBudget, pareja, pet]);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[260px_1fr]">

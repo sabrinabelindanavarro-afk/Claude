@@ -22,6 +22,7 @@ export default function RoomCard({ room }: { room: Room }) {
           {room.match}% match
         </span>
       </div>
+      <p className="mt-2 text-xs font-medium text-vivi-muted">Vivienda habitual · mínimo 6 meses</p>
     </Link>
   );
 }

@@ -1,13 +1,9 @@
 import { notFound } from 'next/navigation';
-import { getRoomById, rooms } from '@/lib/rooms';
+import { fetchRoomById } from '@/lib/properties.server';
 import BookingWizard from '@/components/BookingWizard';
 
-export function generateStaticParams() {
-  return rooms.map((room) => ({ id: room.id }));
-}
-
-export default function ReservarPage({ params }: { params: { id: string } }) {
-  const room = getRoomById(params.id);
+export default async function ReservarPage({ params }: { params: { id: string } }) {
+  const room = await fetchRoomById(params.id);
   if (!room) return notFound();
 
   return (
@@ -17,8 +13,8 @@ export default function ReservarPage({ params }: { params: { id: string } }) {
         Se reserva con fianza + comisión automática.
       </h1>
       <p className="mt-3 max-w-2xl text-sm text-vivi-muted">
-        No existe una seña separada. La fianza equivale a una mensualidad y VIVI cobra su 5% en el
-        mismo momento del pago.
+        No existe una seña separada. La fianza equivale a una mensualidad y VIVI cobra una comisión
+        fija de 50 € en el mismo momento del pago. Vivienda habitual, estancia mínima de 6 meses.
       </p>
 
       <div className="mt-10">

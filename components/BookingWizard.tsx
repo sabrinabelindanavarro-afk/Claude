@@ -1,28 +1,85 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Room } from '@/lib/rooms';
 import { calculateBookingTotal } from '@/lib/rooms';
+import { createClient } from '@/lib/supabase/client';
 
 const steps = [
   'Elegir habitación',
   'Iniciar sesión',
   'Filtro + KYC',
   'Aceptar condiciones',
-  'Pagar fianza + 5%',
+  'Pagar fianza + comisión',
 ];
 
 export default function BookingWizard({ room }: { room: Room }) {
+  const supabase = createClient();
   const [step, setStep] = useState(0);
   const [confirmed, setConfirmed] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [kycVerified, setKycVerified] = useState(false);
+  const [kycNote, setKycNote] = useState<string | null>(null);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
   const { deposit, commission, total } = calculateBookingTotal(room.price);
 
+  useEffect(() => {
+    supabase?.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
+  }, [supabase]);
+
   const isLastStep = step === steps.length - 1;
+  const authRequired = step === 1 && !userEmail;
+  const kycRequired = step === 2 && !kycVerified;
+
+  async function handleVerifyKyc() {
+    setKycNote(null);
+    const res = await fetch('/api/kyc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomId: room.id }),
+    });
+    if (res.ok) {
+      const { url } = await res.json();
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+    }
+    // Didit todavía no está conectado: dejamos avanzar en modo demo.
+    setKycNote('Modo demo: Didit todavía no está conectado (ver SETUP.md). Verificación simulada.');
+    setKycVerified(true);
+  }
+
+  async function handlePay() {
+    setPaying(true);
+    setPayError(null);
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomId: room.id }),
+    });
+    setPaying(false);
+    if (res.ok) {
+      const { url } = await res.json();
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+    }
+    // Stripe todavía no está conectado: dejamos ver la confirmación en modo demo.
+    setPayError('Modo demo: Stripe todavía no está conectado (ver SETUP.md). Pago simulado.');
+    setConfirmed(true);
+  }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div className="rounded-2xl border border-slate-200 bg-white p-6">
-        <ol className="space-y-4">
+        <span className="inline-block rounded-full bg-vivi-mintLight px-3 py-1 text-xs font-bold text-emerald-700">
+          Vivienda habitual · mínimo 6 meses
+        </span>
+
+        <ol className="mt-5 space-y-4">
           {steps.map((label, i) => {
             const state = i < step ? 'done' : i === step ? 'current' : 'upcoming';
             return (
@@ -50,6 +107,39 @@ export default function BookingWizard({ room }: { room: Room }) {
           })}
         </ol>
 
+        {authRequired && (
+          <div className="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
+            Necesitás iniciar sesión para continuar con la reserva.
+            <a
+              href={`/login?next=/reservar/${room.id}`}
+              className="mt-3 block rounded-lg bg-vivi-navy px-4 py-2 text-center text-sm font-semibold text-white"
+            >
+              Iniciar sesión
+            </a>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="mt-6 rounded-xl bg-slate-50 p-4">
+            {kycVerified ? (
+              <p className="text-sm font-semibold text-emerald-700">✓ Identidad verificada</p>
+            ) : (
+              <>
+                <p className="text-sm text-vivi-muted">
+                  Verificá tu identidad con documento + selfie para poder reservar.
+                </p>
+                <button
+                  onClick={handleVerifyKyc}
+                  className="mt-3 rounded-lg bg-vivi-navy px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Verificar identidad con Didit
+                </button>
+              </>
+            )}
+            {kycNote && <p className="mt-2 text-xs text-vivi-muted">{kycNote}</p>}
+          </div>
+        )}
+
         {!confirmed ? (
           <div className="mt-8 flex gap-3">
             {step > 0 && (
@@ -61,17 +151,19 @@ export default function BookingWizard({ room }: { room: Room }) {
               </button>
             )}
             <button
+              disabled={authRequired || kycRequired || paying}
               onClick={() => {
                 if (isLastStep) {
-                  setConfirmed(true);
+                  handlePay();
                 } else {
                   setStep((s) => s + 1);
                 }
               }}
-              className="rounded-xl bg-vivi-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-vivi-navyLight"
+              className="rounded-xl bg-vivi-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-vivi-navyLight disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLastStep ? 'Pagar y reservar' : 'Continuar'}
+              {isLastStep ? (paying ? 'Redirigiendo a pago…' : 'Pagar y reservar') : 'Continuar'}
             </button>
+            {payError && <p className="self-center text-xs text-vivi-muted">{payError}</p>}
           </div>
         ) : (
           <div className="mt-8 rounded-xl bg-vivi-mintLight p-6 text-emerald-800">
@@ -100,7 +192,7 @@ export default function BookingWizard({ room }: { room: Room }) {
             <dd className="font-bold text-vivi-ink">{deposit.toFixed(2)} €</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-vivi-muted">Comisión VIVI (5%)</dt>
+            <dt className="text-vivi-muted">Comisión VIVI (fija)</dt>
             <dd className="font-bold text-vivi-ink">{commission.toFixed(2)} €</dd>
           </div>
           <div className="flex justify-between border-t border-slate-200 pt-3 text-base">

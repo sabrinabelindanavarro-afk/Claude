@@ -12,9 +12,16 @@ export type Room = {
   colorFrom: string;
   colorTo: string;
   amenities: string[];
+  description: string;
 };
 
-export const rooms: Room[] = [
+export const MINIMUM_STAY_MONTHS = 6;
+export const VIVI_COMMISSION_EUR = 50;
+
+// Se usan mientras no haya una tabla `properties` en Supabase configurada
+// (o como semilla para cargarlas ahí). Ver SETUP.md para subir las tuyas
+// sin código desde el editor de tablas de Supabase.
+export const mockRooms: Room[] = [
   {
     id: 'ruzafa-3a',
     zone: 'Ruzafa',
@@ -29,6 +36,8 @@ export const rooms: Room[] = [
     colorFrom: '#BFD9FF',
     colorTo: '#DCE9FF',
     amenities: ['WiFi', 'A/C', 'Escritorio', 'Lavadora', 'Ascensor', 'Balcón'],
+    description:
+      'Habitación exterior con balcón en un piso reformado a dos calles del Mercado de Ruzafa.',
   },
   {
     id: 'benimaclet-1c',
@@ -44,6 +53,7 @@ export const rooms: Room[] = [
     colorFrom: '#E4D9FF',
     colorTo: '#F0E9FF',
     amenities: ['WiFi', 'Escritorio', 'Lavadora', 'Terraza compartida'],
+    description: 'A diez minutos a pie de la Universitat de València y la Politècnica.',
   },
   {
     id: 'mestalla-2b',
@@ -59,6 +69,7 @@ export const rooms: Room[] = [
     colorFrom: '#BFEBE0',
     colorTo: '#DFF7EF',
     amenities: ['WiFi', 'A/C', 'Lavadora', 'Ascensor'],
+    description: 'Piso con mucha luz natural en una calle tranquila detrás del Mestalla.',
   },
   {
     id: 'el-carmen-4d',
@@ -74,16 +85,13 @@ export const rooms: Room[] = [
     colorFrom: '#FFD9CF',
     colorTo: '#FFEAE4',
     amenities: ['WiFi', 'A/C', 'Escritorio', 'Balcón', 'Ascensor'],
+    description: 'En pleno casco histórico, en un edificio del siglo XIX restaurado.',
   },
 ];
 
-export function getRoomById(id: string): Room | undefined {
-  return rooms.find((room) => room.id === id);
-}
-
 export function calculateBookingTotal(monthlyPrice: number) {
   const deposit = monthlyPrice;
-  const commission = Math.round(monthlyPrice * 0.05 * 100) / 100;
+  const commission = VIVI_COMMISSION_EUR;
   const total = Math.round((deposit + commission) * 100) / 100;
   return { deposit, commission, total };
 }

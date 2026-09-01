@@ -7,8 +7,8 @@ export default function Footer() {
           <p>Alquiler residencial, verificado y reservable desde el móvil.</p>
         </div>
         <p className="mt-4 text-xs text-slate-500">
-          Vivienda habitual · estancia mínima 6 meses. Fianza equivalente a una mensualidad + 5% de
-          comisión de servicio.
+          Vivienda habitual · estancia mínima 6 meses. Fianza equivalente a una mensualidad + comisión
+          fija de servicio de 50 €.
         </p>
       </div>
     </footer>

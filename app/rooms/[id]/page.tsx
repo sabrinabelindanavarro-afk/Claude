@@ -1,13 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getRoomById, rooms } from '@/lib/rooms';
+import { fetchRoomById } from '@/lib/properties.server';
 
-export function generateStaticParams() {
-  return rooms.map((room) => ({ id: room.id }));
-}
-
-export default function RoomDetailPage({ params }: { params: { id: string } }) {
-  const room = getRoomById(params.id);
+export default async function RoomDetailPage({ params }: { params: { id: string } }) {
+  const room = await fetchRoomById(params.id);
   if (!room) return notFound();
 
   return (
@@ -46,6 +42,10 @@ export default function RoomDetailPage({ params }: { params: { id: string } }) {
             </div>
           </div>
 
+          {room.description && (
+            <p className="mt-4 text-sm leading-relaxed text-vivi-muted">{room.description}</p>
+          )}
+
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {room.amenities.map((a) => (
               <div
@@ -59,7 +59,10 @@ export default function RoomDetailPage({ params }: { params: { id: string } }) {
         </div>
 
         <aside className="h-fit rounded-2xl bg-vivi-navy p-6 text-white">
-          <h3 className="text-lg font-bold">¿Te interesa?</h3>
+          <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-vivi-mint">
+            Vivienda habitual · mínimo 6 meses
+          </span>
+          <h3 className="mt-4 text-lg font-bold">¿Te interesa?</h3>
           <p className="mt-3 text-sm text-slate-300">
             Puedes mirar tantas habitaciones como quieras. Solo pedimos login, filtrado y verificación
             cuando decides reservar.

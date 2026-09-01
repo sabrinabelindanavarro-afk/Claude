@@ -1,8 +1,10 @@
 import Hero from '@/components/Hero';
 import RoomsCatalog from '@/components/RoomsCatalog';
-import HowItWorks from '@/components/HowItWorks';
+import { fetchRooms } from '@/lib/properties.server';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const rooms = await fetchRooms();
+
   return (
     <>
       <Hero />
@@ -14,15 +16,12 @@ export default function HomePage() {
         </h2>
         <p className="mt-3 max-w-2xl text-sm text-vivi-muted">
           Una experiencia sencilla, visual y comparable para alquiler residencial de medio/largo plazo.
+          Todas las habitaciones son para vivienda habitual, con una estancia mínima de 6 meses.
         </p>
         <div className="mt-10">
-          <RoomsCatalog />
+          <RoomsCatalog rooms={rooms} />
         </div>
       </section>
-
-      <div id="como-funciona">
-        <HowItWorks />
-      </div>
 
       <section id="faq" className="mx-auto max-w-6xl px-6 py-20">
         <p className="text-xs font-bold uppercase tracking-wide text-vivi-mint">Preguntas frecuentes</p>
@@ -39,8 +38,8 @@ export default function HomePage() {
           <div className="rounded-2xl border border-slate-200 bg-white p-6">
             <p className="font-bold text-vivi-ink">¿Qué pago al reservar?</p>
             <p className="mt-2 text-sm text-vivi-muted">
-              Una fianza equivalente a una mensualidad más la comisión de servicio del 5%, en un único
-              pago.
+              Una fianza equivalente a una mensualidad más una comisión fija de servicio de 50 €, en
+              un único pago.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -53,7 +52,8 @@ export default function HomePage() {
           <div className="rounded-2xl border border-slate-200 bg-white p-6">
             <p className="font-bold text-vivi-ink">¿Aceptan estancias cortas?</p>
             <p className="mt-2 text-sm text-vivi-muted">
-              No. Solo vivienda habitual con estancia mínima de 6 meses.
+              No. Todas las propiedades del catálogo son solo para vivienda habitual, con una estancia
+              mínima de 6 meses.
             </p>
           </div>
         </div>

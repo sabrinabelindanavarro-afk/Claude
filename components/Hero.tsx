@@ -8,7 +8,7 @@ export default function Hero() {
       <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 sm:grid-cols-2 sm:py-28">
         <div className="relative z-10">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-vivi-mint">
-            Vivienda habitual · +6 meses
+            Vivienda habitual · mínimo 6 meses
           </span>
           <h1 className="mt-6 text-4xl font-extrabold leading-tight text-white sm:text-5xl">
             Alquiler residencial, verificado y reservable desde el móvil.
